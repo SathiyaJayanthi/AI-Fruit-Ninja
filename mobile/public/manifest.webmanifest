@@ -1,0 +1,26 @@
+{
+  "name": "AI Fruit Ninja - Gesture Controlled Blade",
+  "short_name": "Fruit Ninja AI",
+  "description": "AI Hand Gesture Controlled Fruit Ninja arcade game powered by MediaPipe Web Vision.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1220",
+  "theme_color": "#0f1220",
+  "icons": [
+    {
+      "src": "./assets/fruits/watermelon.png",
+      "sizes": "140x140",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/fruits/apple.png",
+      "sizes": "140x140",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["games", "arcade", "entertainment"],
+  "screenshots": []
+}

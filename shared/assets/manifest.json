@@ -1,0 +1,92 @@
+{
+  "fruits": {
+    "watermelon": {
+      "path": "assets/fruits/watermelon.png",
+      "name": "Watermelon",
+      "radius": 52,
+      "points": 10
+    },
+    "apple": {
+      "path": "assets/fruits/apple.png",
+      "name": "Apple",
+      "radius": 42,
+      "points": 10
+    },
+    "orange": {
+      "path": "assets/fruits/orange.png",
+      "name": "Orange",
+      "radius": 44,
+      "points": 10
+    },
+    "banana": {
+      "path": "assets/fruits/banana.png",
+      "name": "Banana",
+      "radius": 40,
+      "points": 15
+    },
+    "pineapple": {
+      "path": "assets/fruits/pineapple.png",
+      "name": "Pineapple",
+      "radius": 54,
+      "points": 20
+    },
+    "strawberry": {
+      "path": "assets/fruits/strawberry.png",
+      "name": "Strawberry",
+      "radius": 34,
+      "points": 15
+    },
+    "grapes": {
+      "path": "assets/fruits/grapes.png",
+      "name": "Grapes",
+      "radius": 38,
+      "points": 20
+    }
+  },
+  "sliced_fruits": {
+    "watermelon": {
+      "half_1": "assets/sliced_fruits/watermelon_half_1.png",
+      "half_2": "assets/sliced_fruits/watermelon_half_2.png"
+    },
+    "apple": {
+      "half_1": "assets/sliced_fruits/apple_half_1.png",
+      "half_2": "assets/sliced_fruits/apple_half_2.png"
+    },
+    "orange": {
+      "half_1": "assets/sliced_fruits/orange_half_1.png",
+      "half_2": "assets/sliced_fruits/orange_half_2.png"
+    },
+    "banana": {
+      "half_1": "assets/sliced_fruits/banana_half_1.png",
+      "half_2": "assets/sliced_fruits/banana_half_2.png"
+    },
+    "pineapple": {
+      "half_1": "assets/sliced_fruits/pineapple_half_1.png",
+      "half_2": "assets/sliced_fruits/pineapple_half_2.png"
+    },
+    "strawberry": {
+      "half_1": "assets/sliced_fruits/strawberry_half_1.png",
+      "half_2": "assets/sliced_fruits/strawberry_half_2.png"
+    },
+    "grapes": {
+      "half_1": "assets/sliced_fruits/grapes_half_1.png",
+      "half_2": "assets/sliced_fruits/grapes_half_2.png"
+    }
+  },
+  "bombs": {
+    "standard_bomb": {
+      "path": "assets/bombs/bomb.png",
+      "radius": 42
+    }
+  },
+  "sounds": {},
+  "backgrounds": {
+    "arcade_dojo": {
+      "path": "assets/backgrounds/arcade_bg.png",
+      "size": [
+        1280,
+        720
+      ]
+    }
+  }
+}

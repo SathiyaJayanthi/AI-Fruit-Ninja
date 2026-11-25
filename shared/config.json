@@ -1,0 +1,148 @@
+{
+  "title": "AI Fruit Ninja - Gesture Controlled Blade",
+  "screen": {
+    "width": 1280,
+    "height": 720,
+    "fps": 60
+  },
+  "colors": {
+    "background": [15, 18, 32],
+    "panelBg": [24, 30, 52, 200],
+    "textPrimary": [245, 248, 255],
+    "textSecondary": [160, 175, 205],
+    "accentCyan": [0, 230, 255],
+    "accentGold": [255, 215, 0],
+    "accentRed": [255, 65, 85],
+    "accentGreen": [45, 220, 110],
+    "accentPurple": [170, 75, 255]
+  },
+  "blade": {
+    "trailLength": 18,
+    "minSliceSpeed": 320.0,
+    "minSliceDistance": 14.0,
+    "baseWidth": 14.0,
+    "colorCore": [255, 255, 255],
+    "colorGlow": [0, 225, 255],
+    "colorOuter": [0, 110, 255]
+  },
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "mirror": true,
+    "pipWidth": 200,
+    "pipHeight": 150
+  },
+  "gameplay": {
+    "defaultLives": 3,
+    "defaultRoundTime": 60,
+    "comboTimeWindow": 0.40,
+    "comboMinFruits": 2
+  },
+  "physics": {
+    "gravity": 720.0,
+    "fruitMinVy": -720.0,
+    "fruitMaxVy": -920.0,
+    "fruitMinVx": -160.0,
+    "fruitMaxVx": 160.0,
+    "halfSplitImpulseX": 140.0,
+    "halfSplitImpulseY": -80.0,
+    "halfAngularVelocityMax": 360.0,
+    "initialSpawnInterval": 2.4,
+    "minSpawnInterval": 0.95,
+    "difficultyRampDuration": 90.0,
+    "maxConcurrentFruits": 8
+  },
+  "fruits": {
+    "watermelon": {
+      "name": "Watermelon",
+      "radius": 52,
+      "points": 10,
+      "colorOuter": [35, 130, 45],
+      "colorInner": [230, 40, 55],
+      "juiceColor": [230, 45, 60],
+      "seedColor": [30, 30, 30],
+      "mass": 1.4,
+      "spawnWeight": 20
+    },
+    "apple": {
+      "name": "Apple",
+      "radius": 42,
+      "points": 10,
+      "colorOuter": [220, 30, 40],
+      "colorInner": [255, 250, 220],
+      "juiceColor": [240, 60, 60],
+      "seedColor": [70, 40, 20],
+      "mass": 1.0,
+      "spawnWeight": 22
+    },
+    "orange": {
+      "name": "Orange",
+      "radius": 44,
+      "points": 10,
+      "colorOuter": [255, 140, 0],
+      "colorInner": [255, 175, 45],
+      "juiceColor": [255, 150, 10],
+      "seedColor": [240, 230, 180],
+      "mass": 1.1,
+      "spawnWeight": 20
+    },
+    "banana": {
+      "name": "Banana",
+      "radius": 40,
+      "points": 15,
+      "colorOuter": [255, 225, 45],
+      "colorInner": [255, 250, 210],
+      "juiceColor": [250, 235, 140],
+      "seedColor": [90, 80, 50],
+      "mass": 0.9,
+      "spawnWeight": 16
+    },
+    "pineapple": {
+      "name": "Pineapple",
+      "radius": 54,
+      "points": 20,
+      "colorOuter": [205, 145, 30],
+      "colorInner": [255, 235, 75],
+      "juiceColor": [255, 220, 50],
+      "seedColor": [160, 110, 20],
+      "mass": 1.5,
+      "spawnWeight": 12
+    },
+    "strawberry": {
+      "name": "Strawberry",
+      "radius": 34,
+      "points": 15,
+      "colorOuter": [235, 30, 65],
+      "colorInner": [255, 100, 120],
+      "juiceColor": [240, 40, 70],
+      "seedColor": [255, 230, 130],
+      "mass": 0.7,
+      "spawnWeight": 18
+    },
+    "grapes": {
+      "name": "Grapes",
+      "radius": 38,
+      "points": 20,
+      "colorOuter": [125, 45, 185],
+      "colorInner": [180, 120, 225],
+      "juiceColor": [145, 55, 200],
+      "seedColor": [60, 20, 90],
+      "mass": 0.8,
+      "spawnWeight": 14
+    }
+  },
+  "bomb": {
+    "radius": 45,
+    "colorBody": [40, 42, 48],
+    "colorRim": [75, 80, 92],
+    "fuseSparkColor": [255, 195, 30],
+    "spawnChanceBase": 0.18,
+    "spawnChanceMax": 0.35,
+    "penaltyScore": 15
+  },
+  "modes": {
+    "CLASSIC": "CLASSIC",
+    "TIME_CHALLENGE": "TIME_CHALLENGE",
+    "PRACTICE": "PRACTICE"
+  }
+}
