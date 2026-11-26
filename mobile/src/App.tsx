@@ -119,10 +119,11 @@ export const App: React.FC = () => {
 
         // Update physics, slicing, collisions
         const trail = tracker.getTrail();
+        const landmarks = tracker.getLandmarks();
         engine.update(dt, trail, tracker.isSlicing);
 
-        // Render entities and trail
-        engine.render(trail, tracker.isSlicing);
+        // Render entities, blade trail, and glowing hand skeleton
+        engine.render(trail, tracker.isSlicing, landmarks);
 
         // Sync local React state
         setScore(engine.score);
@@ -177,6 +178,14 @@ export const App: React.FC = () => {
     const next = !isMuted;
     setIsMuted(next);
     soundManager.setMuted(next);
+  };
+
+  const handleReturnToMenu = () => {
+    if (engineRef.current) {
+      engineRef.current.resetToMenu();
+    }
+    setGameState('MENU');
+    setSummary(null);
   };
 
   return (
@@ -362,7 +371,7 @@ export const App: React.FC = () => {
               <button
                 className="hud-btn"
                 style={{ padding: '12px' }}
-                onClick={() => setGameState('MENU')}
+                onClick={handleReturnToMenu}
               >
                 QUIT TO MENU
               </button>
@@ -425,7 +434,7 @@ export const App: React.FC = () => {
               <button
                 className="hud-btn"
                 style={{ padding: '12px' }}
-                onClick={() => setGameState('MENU')}
+                onClick={handleReturnToMenu}
               >
                 MAIN MENU
               </button>

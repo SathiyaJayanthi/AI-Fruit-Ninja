@@ -98,6 +98,7 @@ class GameEngine:
         # Mouse fallback control (in case webcam is absent or user moves mouse)
         self.use_mouse_fallback = False
         self.prev_mouse_pos: Optional[Tuple[float, float]] = None
+        self.current_landmarks: List[Tuple[int, int, float]] = []
 
     def _init_camera(self):
         """Attempts to open the webcam with fallback handling."""
@@ -203,6 +204,27 @@ class GameEngine:
                 if not self.camera_available or pygame.mouse.get_pressed()[0]:
                     self.use_mouse_fallback = True
 
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mx, my = event.pos
+                if self.state == STATE_GAME_OVER:
+                    if self.ui.btn_game_over_play_again and self.ui.btn_game_over_play_again.collidepoint(mx, my):
+                        self.start_game(self.selected_mode)
+                    elif self.ui.btn_game_over_main_menu and self.ui.btn_game_over_main_menu.collidepoint(mx, my):
+                        self.state = STATE_MENU
+                elif self.state == STATE_PAUSED:
+                    if self.ui.btn_pause_resume and self.ui.btn_pause_resume.collidepoint(mx, my):
+                        self.state = STATE_PLAYING
+                    elif self.ui.btn_pause_main_menu and self.ui.btn_pause_main_menu.collidepoint(mx, my):
+                        self.state = STATE_MENU
+                elif self.state == STATE_MENU:
+                    modes = [MODE_CLASSIC, MODE_TIME_CHALLENGE, MODE_PRACTICE]
+                    for idx, btn_rect in enumerate(self.ui.btn_menu_modes):
+                        if btn_rect and btn_rect.collidepoint(mx, my):
+                            self.selected_mode = modes[idx]
+                            break
+                    if self.ui.btn_menu_start and self.ui.btn_menu_start.collidepoint(mx, my):
+                        self.start_game(self.selected_mode)
+
     def _update(self, dt: float):
         """Runs computer vision tracking, physics updates, and collisions."""
         # 1. Computer Vision Processing
@@ -215,7 +237,12 @@ class GameEngine:
                 detect_res = self.detector.process_frame(frame, mirror=CAMERA_MIRROR)
                 hand_detected = detect_res["detected"]
                 raw_finger_tip = detect_res["index_tip"]
+                self.current_landmarks = detect_res.get("landmarks", []) if hand_detected else []
                 self.ui.update_pip_frame(detect_res["annotated_frame"])
+            else:
+                self.current_landmarks = []
+        else:
+            self.current_landmarks = []
 
         # Fallback to mouse pointer if no hand or mouse dragged
         if raw_finger_tip is None and (self.use_mouse_fallback or not self.camera_available):
@@ -308,7 +335,14 @@ class GameEngine:
         # 3. Particle Systems (Juice droplets, shockwaves, floating scores)
         self.particles.render(self.screen)
 
-        # 4. Virtual Blade Glowing Trail
+        # 4. Virtual Blade Glowing Trail & Hand Skeleton
+        if self.current_landmarks:
+            self.blade_renderer.render_hand_skeleton(
+                self.screen,
+                landmarks=self.current_landmarks,
+                is_slicing=self.tracker.is_slicing,
+            )
+
         trail_pts = self.tracker.get_trail_points()
         self.blade_renderer.render(
             self.screen,

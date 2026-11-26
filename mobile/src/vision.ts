@@ -9,6 +9,7 @@ export class MobileHandTracker {
   private lastTime: number = 0;
   private smoothedPos: { x: number; y: number } | null = null;
   private trail: { x: number; y: number; time: number }[] = [];
+  public landmarks: { x: number; y: number; z: number }[] = [];
   public currentSpeed: number = 0;
   public isSlicing: boolean = false;
   private minSliceSpeed: number = GAME_CONSTANTS.BLADE_MIN_SLICE_SPEED;
@@ -98,14 +99,23 @@ export class MobileHandTracker {
       this.isSlicing = false;
       this.currentSpeed = 0;
       this.smoothedPos = null;
+      this.landmarks = [];
       return emptyResult;
     }
 
     const firstHand = results.landmarks[0];
     const rawTip = firstHand[8]; // Landmark 8: Index Fingertip
     if (!rawTip) {
+      this.landmarks = [];
       return emptyResult;
     }
+
+    // Map all 21 landmarks to mirrored screen coordinates
+    this.landmarks = firstHand.map((lm) => ({
+      x: (1.0 - lm.x) * canvasWidth,
+      y: lm.y * canvasHeight,
+      z: lm.z ?? 0,
+    }));
 
     // Horizontal mirror for natural front-camera interaction
     const screenX = (1.0 - rawTip.x) * canvasWidth;
@@ -122,11 +132,7 @@ export class MobileHandTracker {
       return {
         detected: true,
         tip: this.smoothedPos,
-        landmarks: firstHand.map((lm) => ({
-          x: (1.0 - lm.x) * canvasWidth,
-          y: lm.y * canvasHeight,
-          z: lm.z,
-        })),
+        landmarks: this.landmarks,
         currentSpeed: 0,
         isSlicing: false,
       };
@@ -155,11 +161,7 @@ export class MobileHandTracker {
     return {
       detected: true,
       tip: this.smoothedPos,
-      landmarks: firstHand.map((lm) => ({
-        x: (1.0 - lm.x) * canvasWidth,
-        y: lm.y * canvasHeight,
-        z: lm.z,
-      })),
+      landmarks: this.landmarks,
       currentSpeed: speed,
       isSlicing: this.isSlicing,
     };
@@ -169,9 +171,14 @@ export class MobileHandTracker {
     return this.trail;
   }
 
+  public getLandmarks() {
+    return this.landmarks;
+  }
+
   public clear() {
     this.smoothedPos = null;
     this.trail = [];
+    this.landmarks = [];
     this.currentSpeed = 0;
     this.isSlicing = false;
   }

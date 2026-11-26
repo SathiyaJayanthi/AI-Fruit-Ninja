@@ -166,6 +166,19 @@ export class MobileGameEngine {
     soundManager.playSwoosh();
   }
 
+  public resetToMenu() {
+    this.state = 'MENU';
+    this.fruits = [];
+    this.halves = [];
+    this.bombs = [];
+    this.particles = [];
+    this.flashes = [];
+    this.floatingTexts = [];
+    this.recentSlices = [];
+    this.touchTrail = [];
+    this.spawnTimer = 0;
+  }
+
   public update(dt: number, bladeTrail: { x: number; y: number; time: number }[], isBladeSlicing: boolean) {
     if (this.state !== 'PLAYING') {
       this.updateParticles(dt);
@@ -522,7 +535,11 @@ export class MobileGameEngine {
     });
   }
 
-  public render(bladeTrail: { x: number; y: number }[], isBladeSlicing: boolean) {
+  public render(
+    bladeTrail: { x: number; y: number; time?: number }[],
+    isBladeSlicing: boolean,
+    landmarks: { x: number; y: number; z?: number }[] = []
+  ) {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -697,6 +714,102 @@ export class MobileGameEngine {
       ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    // 8. Glowing Hand Skeleton & Bright Connecting Lights
+    if (landmarks && landmarks.length >= 21) {
+      this.renderGlowingHandSkeleton(landmarks, isBladeSlicing);
+    }
+  }
+
+  private renderGlowingHandSkeleton(
+    landmarks: { x: number; y: number; z?: number }[],
+    isBladeSlicing: boolean
+  ) {
+    const ctx = this.ctx;
+    const HAND_CONNECTIONS = [
+      // Thumb
+      [0, 1], [1, 2], [2, 3], [3, 4],
+      // Index
+      [0, 5], [5, 6], [6, 7], [7, 8],
+      // Middle
+      [0, 9], [9, 10], [10, 11], [11, 12],
+      // Ring
+      [0, 13], [13, 14], [14, 15], [15, 16],
+      // Pinky
+      [0, 17], [17, 18], [18, 19], [19, 20],
+      // Palm knuckles
+      [5, 9], [9, 13], [13, 17],
+    ];
+
+    ctx.save();
+
+    // 1. Draw glowing laser beams connecting finger joints
+    HAND_CONNECTIONS.forEach(([i, j]) => {
+      const p1 = landmarks[i];
+      const p2 = landmarks[j];
+      if (!p1 || !p2) return;
+
+      // Pass 1: Outer cyan glow
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.4)';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Pass 2: Vivid neon beam
+      ctx.strokeStyle = 'rgba(0, 245, 255, 0.9)';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      // Pass 3: Brilliant white core laser
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    });
+
+    // 2. Draw bright radiant light nodes on all 21 joints
+    landmarks.forEach((lm, idx) => {
+      const isTip = [4, 8, 12, 16, 20].includes(idx);
+      const isIndexTip = idx === 8;
+      const baseR = isIndexTip ? (isBladeSlicing ? 14 : 10) : (isTip ? 7 : 5);
+
+      // Outer soft radiant flare
+      ctx.fillStyle = isIndexTip ? 'rgba(0, 255, 255, 0.65)' : 'rgba(0, 229, 255, 0.4)';
+      ctx.beginPath();
+      ctx.arc(lm.x, lm.y, baseR + 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner electric neon sphere
+      ctx.fillStyle = isIndexTip ? '#00e5ff' : '#38bdf8';
+      ctx.beginPath();
+      ctx.arc(lm.x, lm.y, baseR, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bright white light point at center
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(lm.x, lm.y, Math.max(2, baseR * 0.45), 0, Math.PI * 2);
+      ctx.fill();
+
+      // Extra energy aura for Index Fingertip (Blade origin)
+      if (isIndexTip) {
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(lm.x, lm.y, baseR + 8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    });
+
+    ctx.restore();
   }
 
   public getSummary(): GameSummary {

@@ -116,6 +116,61 @@ class BladeRenderer:
         pygame.draw.circle(surface, self.color_glow, (int(tip_x), int(tip_y)), flare_radius)
         pygame.draw.circle(surface, self.color_core, (int(tip_x), int(tip_y)), max(3, flare_radius // 2))
 
+    def render_hand_skeleton(
+        self,
+        surface: pygame.Surface,
+        landmarks: List[Tuple[int, int, float]],
+        is_slicing: bool = False,
+    ):
+        """
+        Renders an arcade glowing cybernetic hand skeleton with bright light beams
+        connecting all 21 finger joints directly onto the main game display.
+        """
+        if not landmarks or len(landmarks) < 21:
+            return
+
+        connections = [
+            (0, 1), (1, 2), (2, 3), (3, 4),        # Thumb
+            (0, 5), (5, 6), (6, 7), (7, 8),        # Index Finger
+            (0, 9), (9, 10), (10, 11), (11, 12),   # Middle Finger
+            (0, 13), (13, 14), (14, 15), (15, 16), # Ring Finger
+            (0, 17), (17, 18), (18, 19), (19, 20), # Pinky
+            (5, 9), (9, 13), (13, 17),             # Knuckle bridge
+        ]
+
+        # 1. Draw bright light beams connecting finger joints
+        for idx1, idx2 in connections:
+            if idx1 >= len(landmarks) or idx2 >= len(landmarks):
+                continue
+            p1 = (int(landmarks[idx1][0]), int(landmarks[idx1][1]))
+            p2 = (int(landmarks[idx2][0]), int(landmarks[idx2][1]))
+
+            # Outer glow
+            pygame.draw.line(surface, self.color_outer, p1, p2, 7)
+            # Vivid neon beam
+            pygame.draw.line(surface, self.color_glow, p1, p2, 3)
+            # Pure white laser core
+            pygame.draw.line(surface, (255, 255, 255), p1, p2, 1)
+
+        # 2. Draw bright radiant light nodes on all joints
+        tips = {4, 8, 12, 16, 20}
+        for idx, lm in enumerate(landmarks):
+            x, y = int(lm[0]), int(lm[1])
+            is_index_tip = (idx == 8)
+            base_r = 12 if is_index_tip else (7 if idx in tips else 5)
+
+            # Outer soft halo
+            pygame.draw.circle(surface, self.color_outer, (x, y), base_r + 4)
+            # Radiant neon sphere
+            pygame.draw.circle(surface, self.color_glow, (x, y), base_r)
+            # Brilliant white center light
+            pygame.draw.circle(surface, (255, 255, 255), (x, y), max(2, int(base_r * 0.45)))
+
+            if is_index_tip:
+                # Pulsing energy ring for blade emitter
+                ring_r = base_r + 6 if not is_slicing else base_r + 10
+                pygame.draw.circle(surface, (255, 255, 255), (x, y), ring_r, 2)
+
 
 class SliceManager:
     """

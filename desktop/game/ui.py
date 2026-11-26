@@ -50,6 +50,14 @@ class UIRenderer:
         self.pip_surface: Optional[pygame.Surface] = None
         self.show_pip = True
 
+        # Interactive Button Rectangles for Click / Tap Detection
+        self.btn_game_over_play_again: Optional[pygame.Rect] = None
+        self.btn_game_over_main_menu: Optional[pygame.Rect] = None
+        self.btn_pause_resume: Optional[pygame.Rect] = None
+        self.btn_pause_main_menu: Optional[pygame.Rect] = None
+        self.btn_menu_modes: List[pygame.Rect] = []
+        self.btn_menu_start: Optional[pygame.Rect] = None
+
     def toggle_pip(self):
         """Toggles webcam PIP display."""
         self.show_pip = not self.show_pip
@@ -185,9 +193,11 @@ class UIRenderer:
         ]
 
         start_y = 280
+        self.btn_menu_modes = []
         for i, (m_id, m_name, m_desc) in enumerate(modes):
             is_selected = (m_id == selected_mode)
             btn_rect = pygame.Rect(SCREEN_WIDTH // 2 - 280, start_y + i * 85, 560, 68)
+            self.btn_menu_modes.append(btn_rect)
 
             bg_color = (35, 45, 80) if is_selected else (22, 26, 44)
             border_color = COLOR_ACCENT_CYAN if is_selected else (60, 70, 95)
@@ -201,11 +211,19 @@ class UIRenderer:
             desc_surf = self.font_small.render(m_desc, True, COLOR_TEXT_SECONDARY)
             surface.blit(desc_surf, (btn_rect.x + 25, btn_rect.y + 38))
 
-        # Instructions / Start Prompt
-        prompt_y = start_y + len(modes) * 85 + 25
-        prompt_text = "Press [1, 2, 3] to Select Mode  |  Press [SPACE] or Slice to START"
-        prompt_surf = self.font_medium.render(prompt_text, True, COLOR_ACCENT_GREEN)
-        surface.blit(prompt_surf, prompt_surf.get_rect(center=(SCREEN_WIDTH // 2, prompt_y)))
+        # Clickable START GAME Button
+        prompt_y = start_y + len(modes) * 85 + 20
+        self.btn_menu_start = pygame.Rect(SCREEN_WIDTH // 2 - 140, prompt_y - 6, 280, 48)
+        self._draw_rounded_panel(
+            surface,
+            self.btn_menu_start,
+            bg_color=(0, 160, 220),
+            border_color=(255, 255, 255),
+            border_width=2,
+            border_radius=12,
+        )
+        start_txt = self.font_large.render("START GAME", True, (255, 255, 255))
+        surface.blit(start_txt, start_txt.get_rect(center=self.btn_menu_start.center))
 
         # Hand Detection Calibration Indicator
         cam_hint = (
@@ -215,46 +233,55 @@ class UIRenderer:
         )
         cam_color = COLOR_ACCENT_GREEN if is_hand_detected else COLOR_ACCENT_GOLD
         cam_surf = self.font_small.render(cam_hint, True, cam_color)
-        surface.blit(cam_surf, cam_surf.get_rect(center=(SCREEN_WIDTH // 2, prompt_y + 40)))
+        surface.blit(cam_surf, cam_surf.get_rect(center=(SCREEN_WIDTH // 2, prompt_y + 60)))
 
     def render_pause(self, surface: pygame.Surface):
-        """Renders Pause Menu overlay."""
+        """Renders Pause Menu overlay with interactive clickable buttons."""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((10, 14, 25, 200))
         surface.blit(overlay, (0, 0))
 
         title = self.font_title.render("GAME PAUSED", True, COLOR_TEXT_PRIMARY)
-        surface.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 60)))
+        surface.blit(title, title.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 70)))
 
-        msg = self.font_medium.render("Press [P] to Resume  |  [R] to Restart  |  [ESC] for Menu", True, COLOR_ACCENT_CYAN)
-        surface.blit(msg, msg.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)))
+        # Interactive Buttons
+        self.btn_pause_resume = pygame.Rect(SCREEN_WIDTH // 2 - 210, SCREEN_HEIGHT // 2 + 10, 190, 46)
+        self.btn_pause_main_menu = pygame.Rect(SCREEN_WIDTH // 2 + 20, SCREEN_HEIGHT // 2 + 10, 190, 46)
+
+        self._draw_rounded_panel(surface, self.btn_pause_resume, (0, 160, 220), border_color=(255, 255, 255), border_width=2, border_radius=10)
+        res_txt = self.font_medium.render("RESUME [P]", True, (255, 255, 255))
+        surface.blit(res_txt, res_txt.get_rect(center=self.btn_pause_resume.center))
+
+        self._draw_rounded_panel(surface, self.btn_pause_main_menu, (35, 45, 75), border_color=COLOR_ACCENT_CYAN, border_width=2, border_radius=10)
+        menu_txt = self.font_medium.render("MAIN MENU [ESC]", True, COLOR_ACCENT_CYAN)
+        surface.blit(menu_txt, menu_txt.get_rect(center=self.btn_pause_main_menu.center))
 
     def render_game_over(
         self,
         surface: pygame.Surface,
         summary: Dict[str, Any],
     ):
-        """Renders Game Over statistics card."""
+        """Renders Game Over statistics card with interactive clickable buttons."""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((10, 14, 25, 225))
         surface.blit(overlay, (0, 0))
 
-        card_rect = pygame.Rect(SCREEN_WIDTH // 2 - 270, 80, 540, 540)
+        card_rect = pygame.Rect(SCREEN_WIDTH // 2 - 270, 70, 540, 560)
         self._draw_rounded_panel(surface, card_rect, (24, 30, 52), border_color=COLOR_ACCENT_CYAN, border_width=3)
 
         # Title
         title_text = "TIME'S UP!" if summary["mode"] == MODE_TIME_CHALLENGE and summary["time_remaining"] <= 0 else "GAME OVER"
         title_surf = self.font_title.render(title_text, True, COLOR_ACCENT_RED)
-        surface.blit(title_surf, title_surf.get_rect(center=(SCREEN_WIDTH // 2, 135)))
+        surface.blit(title_surf, title_surf.get_rect(center=(SCREEN_WIDTH // 2, 120)))
 
         # Final Score
         score_val = summary["final_score"]
         score_surf = self.font_digits.render(f"FINAL SCORE: {score_val}", True, COLOR_ACCENT_CYAN)
-        surface.blit(score_surf, score_surf.get_rect(center=(SCREEN_WIDTH // 2, 200)))
+        surface.blit(score_surf, score_surf.get_rect(center=(SCREEN_WIDTH // 2, 180)))
 
         if score_val >= summary["high_score"] and score_val > 0:
             hs_banner = self.font_medium.render("★ NEW HIGH SCORE! ★", True, COLOR_ACCENT_GOLD)
-            surface.blit(hs_banner, hs_banner.get_rect(center=(SCREEN_WIDTH // 2, 240)))
+            surface.blit(hs_banner, hs_banner.get_rect(center=(SCREEN_WIDTH // 2, 220)))
 
         # Detailed Statistics Grid
         stats = [
@@ -266,7 +293,7 @@ class UIRenderer:
             ("Accuracy", f"{summary['accuracy_pct']}%"),
         ]
 
-        sy = 275
+        sy = 250
         for label, val in stats:
             lbl_surf = self.font_medium.render(label, True, COLOR_TEXT_SECONDARY)
             val_surf = self.font_medium.render(val, True, COLOR_TEXT_PRIMARY)
@@ -274,9 +301,17 @@ class UIRenderer:
             surface.blit(val_surf, (card_rect.right - 50 - val_surf.get_width(), sy))
             sy += 36
 
-        # Restart / Menu prompt
-        prompt_surf = self.font_medium.render("Press [SPACE] or [R] to Play Again  |  [ESC] for Menu", True, COLOR_ACCENT_GREEN)
-        surface.blit(prompt_surf, prompt_surf.get_rect(center=(SCREEN_WIDTH // 2, card_rect.bottom - 40)))
+        # Interactive Buttons: PLAY AGAIN & MAIN MENU
+        self.btn_game_over_play_again = pygame.Rect(card_rect.centerx - 220, card_rect.bottom - 68, 200, 48)
+        self.btn_game_over_main_menu = pygame.Rect(card_rect.centerx + 20, card_rect.bottom - 68, 200, 48)
+
+        self._draw_rounded_panel(surface, self.btn_game_over_play_again, (0, 160, 220), border_color=(255, 255, 255), border_width=2, border_radius=10)
+        again_txt = self.font_medium.render("PLAY AGAIN [R]", True, (255, 255, 255))
+        surface.blit(again_txt, again_txt.get_rect(center=self.btn_game_over_play_again.center))
+
+        self._draw_rounded_panel(surface, self.btn_game_over_main_menu, (35, 45, 75), border_color=COLOR_ACCENT_CYAN, border_width=2, border_radius=10)
+        menu_txt = self.font_medium.render("MAIN MENU [ESC]", True, COLOR_ACCENT_CYAN)
+        surface.blit(menu_txt, menu_txt.get_rect(center=self.btn_game_over_main_menu.center))
 
     def _draw_rounded_panel(
         self,
