@@ -10,6 +10,7 @@ export class MobileHandTracker {
   private smoothedPos: { x: number; y: number } | null = null;
   private trail: { x: number; y: number; time: number }[] = [];
   public landmarks: { x: number; y: number; z: number }[] = [];
+  public normalizedLandmarks: { x: number; y: number; z: number }[] = [];
   public currentSpeed: number = 0;
   public isSlicing: boolean = false;
   private minSliceSpeed: number = GAME_CONSTANTS.BLADE_MIN_SLICE_SPEED;
@@ -107,8 +108,16 @@ export class MobileHandTracker {
     const rawTip = firstHand[8]; // Landmark 8: Index Fingertip
     if (!rawTip) {
       this.landmarks = [];
+      this.normalizedLandmarks = [];
       return emptyResult;
     }
+
+    // Normalized landmarks for PIP rendering
+    this.normalizedLandmarks = firstHand.map((lm) => ({
+      x: lm.x,
+      y: lm.y,
+      z: lm.z ?? 0,
+    }));
 
     // Map all 21 landmarks to mirrored screen coordinates
     this.landmarks = firstHand.map((lm) => ({
@@ -175,10 +184,15 @@ export class MobileHandTracker {
     return this.landmarks;
   }
 
+  public getNormalizedLandmarks() {
+    return this.normalizedLandmarks;
+  }
+
   public clear() {
     this.smoothedPos = null;
     this.trail = [];
     this.landmarks = [];
+    this.normalizedLandmarks = [];
     this.currentSpeed = 0;
     this.isSlicing = false;
   }

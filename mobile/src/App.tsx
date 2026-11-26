@@ -4,9 +4,111 @@ import { MobileGameEngine } from './engine';
 import { MobileHandTracker } from './vision';
 import { soundManager } from './audio';
 
+const HAND_CONNECTIONS = [
+  // Thumb
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  // Index
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  // Middle
+  [0, 9], [9, 10], [10, 11], [11, 12],
+  // Ring
+  [0, 13], [13, 14], [14, 15], [15, 16],
+  // Pinky
+  [0, 17], [17, 18], [18, 19], [19, 20],
+  // Palm bridges
+  [5, 9], [9, 13], [13, 17],
+];
+
+function renderPipYellowNerves(
+  pctx: CanvasRenderingContext2D,
+  normLm: { x: number; y: number; z: number }[],
+  width: number,
+  height: number,
+  isSlicing: boolean
+) {
+  // Map normalized coordinates (mirrored horizontally)
+  const pts = normLm.map((lm) => ({
+    x: (1.0 - lm.x) * width,
+    y: lm.y * height,
+  }));
+
+  // 1. Draw bright glowing yellow nerve connections
+  HAND_CONNECTIONS.forEach(([i, j]) => {
+    const p1 = pts[i];
+    const p2 = pts[j];
+    if (!p1 || !p2) return;
+
+    // Pass 1: Outer glowing golden aura
+    pctx.strokeStyle = 'rgba(255, 190, 0, 0.45)';
+    pctx.lineWidth = 5;
+    pctx.lineCap = 'round';
+    pctx.beginPath();
+    pctx.moveTo(p1.x, p1.y);
+    pctx.lineTo(p2.x, p2.y);
+    pctx.stroke();
+
+    // Pass 2: Bright neon yellow nerve fiber
+    pctx.strokeStyle = '#ffee00';
+    pctx.lineWidth = 2.2;
+    pctx.beginPath();
+    pctx.moveTo(p1.x, p1.y);
+    pctx.lineTo(p2.x, p2.y);
+    pctx.stroke();
+
+    // Pass 3: White hot inner core
+    pctx.strokeStyle = '#ffffff';
+    pctx.lineWidth = 0.8;
+    pctx.beginPath();
+    pctx.moveTo(p1.x, p1.y);
+    pctx.lineTo(p2.x, p2.y);
+    pctx.stroke();
+  });
+
+  // 2. Draw glowing yellow nerve nodes on all 21 joints
+  pts.forEach((pt, idx) => {
+    const isTip = [4, 8, 12, 16, 20].includes(idx);
+    const isIndexTip = idx === 8;
+    const r = isIndexTip ? (isSlicing ? 7 : 5.5) : (isTip ? 3.5 : 2.5);
+
+    // Outer golden glow
+    pctx.fillStyle = isIndexTip ? 'rgba(255, 230, 0, 0.7)' : 'rgba(255, 200, 0, 0.45)';
+    pctx.beginPath();
+    pctx.arc(pt.x, pt.y, r + 3, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Bright yellow node
+    pctx.fillStyle = isIndexTip ? '#ffee00' : '#ffd000';
+    pctx.beginPath();
+    pctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+    pctx.fill();
+
+    // Pure white center spark
+    pctx.fillStyle = '#ffffff';
+    pctx.beginPath();
+    pctx.arc(pt.x, pt.y, Math.max(1, r * 0.45), 0, Math.PI * 2);
+    pctx.fill();
+
+    if (isIndexTip) {
+      pctx.strokeStyle = '#ffffff';
+      pctx.lineWidth = 1.2;
+      pctx.beginPath();
+      pctx.arc(pt.x, pt.y, r + 4, 0, Math.PI * 2);
+      pctx.stroke();
+    }
+  });
+
+  // Mini HUD badge
+  pctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+  pctx.fillRect(4, 4, 82, 16);
+  pctx.fillStyle = '#ffee00';
+  pctx.font = 'bold 9px sans-serif';
+  pctx.fillText('● NERVES ACTIVE', 7, 15);
+}
+
 export const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const engineRef = useRef<MobileGameEngine | null>(null);
   const trackerRef = useRef<MobileHandTracker | null>(null);
@@ -119,11 +221,29 @@ export const App: React.FC = () => {
 
         // Update physics, slicing, collisions
         const trail = tracker.getTrail();
-        const landmarks = tracker.getLandmarks();
         engine.update(dt, trail, tracker.isSlicing);
 
-        // Render entities, blade trail, and glowing hand skeleton
-        engine.render(trail, tracker.isSlicing, landmarks);
+        // Render main game screen: ONLY fruit slicing blade trail & entities
+        engine.render(trail, tracker.isSlicing);
+
+        // Render front camera PIP feed with bright glowing yellow nerves
+        const pipCanvas = pipCanvasRef.current;
+        const video = videoRef.current;
+        if (pipCanvas && video && video.readyState >= 2 && showPip) {
+          const pctx = pipCanvas.getContext('2d');
+          if (pctx) {
+            pctx.save();
+            pctx.translate(pipCanvas.width, 0);
+            pctx.scale(-1, 1);
+            pctx.drawImage(video, 0, 0, pipCanvas.width, pipCanvas.height);
+            pctx.restore();
+
+            const normLm = tracker.getNormalizedLandmarks();
+            if (normLm && normLm.length >= 21) {
+              renderPipYellowNerves(pctx, normLm, pipCanvas.width, pipCanvas.height, tracker.isSlicing);
+            }
+          }
+        }
 
         // Sync local React state
         setScore(engine.score);
@@ -193,13 +313,21 @@ export const App: React.FC = () => {
       {/* Background Interactive Game Canvas */}
       <canvas ref={canvasRef} className="game-canvas" />
 
-      {/* Front Camera Video Element (Hidden or PIP) */}
+      {/* Front Camera Video Source (Hidden, feeds MediaPipe model) */}
       <video
         ref={videoRef}
-        className="camera-pip"
-        style={{ display: isCameraActive && showPip ? 'block' : 'none' }}
+        style={{ display: 'none' }}
         playsInline
         muted
+      />
+
+      {/* Front Camera PIP Window with Bright Glowing Yellow Nerves */}
+      <canvas
+        ref={pipCanvasRef}
+        className="camera-pip"
+        width={160}
+        height={120}
+        style={{ display: isCameraActive && showPip ? 'block' : 'none' }}
       />
 
       {/* In-Game HUD Overlay */}

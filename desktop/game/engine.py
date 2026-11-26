@@ -335,14 +335,7 @@ class GameEngine:
         # 3. Particle Systems (Juice droplets, shockwaves, floating scores)
         self.particles.render(self.screen)
 
-        # 4. Virtual Blade Glowing Trail & Hand Skeleton
-        if self.current_landmarks:
-            self.blade_renderer.render_hand_skeleton(
-                self.screen,
-                landmarks=self.current_landmarks,
-                is_slicing=self.tracker.is_slicing,
-            )
-
+        # 4. Virtual Blade Glowing Trail (Only cutting gestures on main game screen)
         trail_pts = self.tracker.get_trail_points()
         self.blade_renderer.render(
             self.screen,

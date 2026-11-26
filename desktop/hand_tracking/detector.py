@@ -243,24 +243,34 @@ class HandDetector:
                 cy = int(py * (h / self.target_height))
                 cam_points.append((cx, cy))
 
-            # Draw bone connections
+            # Draw bright glowing yellow nerve connections
             for p1_idx, p2_idx in HAND_CONNECTIONS:
                 pt1 = cam_points[p1_idx]
                 pt2 = cam_points[p2_idx]
-                cv2.line(annotated_bgr, pt1, pt2, (0, 200, 255), 2)
+                # Outer glowing golden aura
+                cv2.line(annotated_bgr, pt1, pt2, (0, 180, 255), 6, cv2.LINE_AA)
+                # Bright neon yellow nerve fiber
+                cv2.line(annotated_bgr, pt1, pt2, (0, 240, 255), 3, cv2.LINE_AA)
+                # White hot inner core
+                cv2.line(annotated_bgr, pt1, pt2, (255, 255, 255), 1, cv2.LINE_AA)
 
-            # Draw joints (0-20)
+            # Draw glowing yellow nerve nodes on all 21 joints
             for idx, pt in enumerate(cam_points):
                 if idx == self.INDEX_FINGER_TIP_ID:
-                    # Highlight Index Fingertip (Landmark 8) with prominent cyan/white marker
-                    cv2.circle(annotated_bgr, pt, 8, (0, 255, 255), -1)
-                    cv2.circle(annotated_bgr, pt, 12, (255, 255, 255), 2)
+                    # Index Fingertip (Landmark 8 - Blade Emitter)
+                    cv2.circle(annotated_bgr, pt, 11, (0, 180, 255), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 7, (0, 245, 255), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 3, (255, 255, 255), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 14, (255, 255, 255), 2, cv2.LINE_AA)
                     cv2.putText(
-                        annotated_bgr, "8 (BLADE)", (pt[0] + 10, pt[1] - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 255), 1, cv2.LINE_AA
+                        annotated_bgr, "8 (BLADE)", (pt[0] + 12, pt[1] - 6),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 245, 255), 2, cv2.LINE_AA
                     )
                 else:
-                    cv2.circle(annotated_bgr, pt, 4, (0, 165, 255), -1)
+                    # Bright glowing yellow nerve joint
+                    cv2.circle(annotated_bgr, pt, 6, (0, 180, 255), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 4, (0, 235, 255), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 1, (255, 255, 255), -1, cv2.LINE_AA)
 
             # Draw HUD status text on camera frame
             tip_pos_text = f"Tip (8): ({int(index_tip_screen[0])}, {int(index_tip_screen[1])})"
