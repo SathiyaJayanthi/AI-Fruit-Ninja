@@ -248,25 +248,25 @@ class HandDetector:
                 pt1 = cam_points[p1_idx]
                 pt2 = cam_points[p2_idx]
                 # High-contrast dark shadow underneath
-                cv2.line(annotated_bgr, pt1, pt2, (15, 15, 15), 4, cv2.LINE_AA)
+                cv2.line(annotated_bgr, pt1, pt2, (15, 15, 15), 3, cv2.LINE_AA)
                 # Crisp bright white bone line
-                cv2.line(annotated_bgr, pt1, pt2, (255, 255, 255), 2, cv2.LINE_AA)
+                cv2.line(annotated_bgr, pt1, pt2, (255, 255, 255), 1, cv2.LINE_AA)
 
-            # Draw bright lime green landmark circles on all 21 joints
+            # Draw refined, smaller lime green landmark circles on all 21 joints
             for idx, pt in enumerate(cam_points):
                 if idx == self.INDEX_FINGER_TIP_ID:
                     # Index Fingertip (Landmark 8 - Blade Emitter)
-                    cv2.circle(annotated_bgr, pt, 8, (0, 80, 0), -1, cv2.LINE_AA)
-                    cv2.circle(annotated_bgr, pt, 6, (0, 255, 0), -1, cv2.LINE_AA)
-                    cv2.circle(annotated_bgr, pt, 11, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 5, (0, 80, 0), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 3, (0, 255, 0), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 7, (255, 255, 255), 1, cv2.LINE_AA)
                     cv2.putText(
-                        annotated_bgr, "8 (BLADE)", (pt[0] + 12, pt[1] - 4),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 0), 2, cv2.LINE_AA
+                        annotated_bgr, "8 (BLADE)", (pt[0] + 10, pt[1] - 4),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1, cv2.LINE_AA
                     )
                 else:
-                    # Bright lime green joint circle with crisp dark perimeter
-                    cv2.circle(annotated_bgr, pt, 6, (0, 80, 0), -1, cv2.LINE_AA)
-                    cv2.circle(annotated_bgr, pt, 4, (0, 255, 0), -1, cv2.LINE_AA)
+                    # Refined lime green joint circle with crisp dark perimeter
+                    cv2.circle(annotated_bgr, pt, 4, (0, 80, 0), -1, cv2.LINE_AA)
+                    cv2.circle(annotated_bgr, pt, 2, (0, 255, 0), -1, cv2.LINE_AA)
 
             # Draw HUD status text on camera frame
             tip_pos_text = f"Tip (8): ({int(index_tip_screen[0])}, {int(index_tip_screen[1])})"

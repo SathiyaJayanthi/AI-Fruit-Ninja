@@ -46,7 +46,7 @@ function renderPipHandSkeleton(
 
     // Dark under-stroke for high contrast against any video background
     pctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-    pctx.lineWidth = 4;
+    pctx.lineWidth = 3;
     pctx.lineCap = 'round';
     pctx.beginPath();
     pctx.moveTo(p1.x, p1.y);
@@ -55,7 +55,7 @@ function renderPipHandSkeleton(
 
     // Crisp bright white bone line
     pctx.strokeStyle = '#ffffff';
-    pctx.lineWidth = 2.2;
+    pctx.lineWidth = 1.6;
     pctx.lineCap = 'round';
     pctx.beginPath();
     pctx.moveTo(p1.x, p1.y);
@@ -63,18 +63,18 @@ function renderPipHandSkeleton(
     pctx.stroke();
   });
 
-  // 2. Draw bright lime green landmark circles on all 21 joints
+  // 2. Draw refined, smaller lime green landmark circles on all 21 joints
   pts.forEach((pt, idx) => {
     const isIndexTip = idx === 8;
-    const r = isIndexTip ? (isSlicing ? 7 : 6) : 4.5;
+    const r = isIndexTip ? (isSlicing ? 4.5 : 4.0) : 2.5;
 
-    // Dark perimeter border to make the green circle sharply pop
+    // Subtle dark border to make the green circle sharply pop
     pctx.fillStyle = '#003300';
     pctx.beginPath();
-    pctx.arc(pt.x, pt.y, r + 1.5, 0, Math.PI * 2);
+    pctx.arc(pt.x, pt.y, r + 0.8, 0, Math.PI * 2);
     pctx.fill();
 
-    // Bright lime green joint
+    // Bright lime green joint dot
     pctx.fillStyle = '#00ff00';
     pctx.beginPath();
     pctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
@@ -83,9 +83,9 @@ function renderPipHandSkeleton(
     // Special indicator for Index Fingertip (Landmark 8 - Blade Emitter)
     if (isIndexTip) {
       pctx.strokeStyle = '#ffffff';
-      pctx.lineWidth = 2;
+      pctx.lineWidth = 1.5;
       pctx.beginPath();
-      pctx.arc(pt.x, pt.y, r + 4, 0, Math.PI * 2);
+      pctx.arc(pt.x, pt.y, r + 2.8, 0, Math.PI * 2);
       pctx.stroke();
     }
   });
