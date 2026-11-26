@@ -19,78 +19,71 @@ const HAND_CONNECTIONS = [
   [5, 9], [9, 13], [13, 17],
 ];
 
-function renderPipYellowNerves(
+/**
+ * Renders the MediaPipe hand skeleton with bright lime green joint circles
+ * and crisp white connection lines on the front-facing camera PIP canvas.
+ */
+function renderPipHandSkeleton(
   pctx: CanvasRenderingContext2D,
   normLm: { x: number; y: number; z: number }[],
   width: number,
   height: number,
   isSlicing: boolean
 ) {
+  if (!normLm || normLm.length < 21) return;
+
   // Map normalized coordinates (mirrored horizontally)
   const pts = normLm.map((lm) => ({
     x: (1.0 - lm.x) * width,
     y: lm.y * height,
   }));
 
-  // 1. Draw bright glowing yellow nerve connections
+  // 1. Draw crisp white bone connection lines (matching Google MediaPipe reference visualizer)
   HAND_CONNECTIONS.forEach(([i, j]) => {
     const p1 = pts[i];
     const p2 = pts[j];
     if (!p1 || !p2) return;
 
-    // Pass 1: Outer glowing golden aura
-    pctx.strokeStyle = 'rgba(255, 190, 0, 0.45)';
-    pctx.lineWidth = 5;
+    // Dark under-stroke for high contrast against any video background
+    pctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+    pctx.lineWidth = 4;
     pctx.lineCap = 'round';
     pctx.beginPath();
     pctx.moveTo(p1.x, p1.y);
     pctx.lineTo(p2.x, p2.y);
     pctx.stroke();
 
-    // Pass 2: Bright neon yellow nerve fiber
-    pctx.strokeStyle = '#ffee00';
-    pctx.lineWidth = 2.2;
-    pctx.beginPath();
-    pctx.moveTo(p1.x, p1.y);
-    pctx.lineTo(p2.x, p2.y);
-    pctx.stroke();
-
-    // Pass 3: White hot inner core
+    // Crisp bright white bone line
     pctx.strokeStyle = '#ffffff';
-    pctx.lineWidth = 0.8;
+    pctx.lineWidth = 2.2;
+    pctx.lineCap = 'round';
     pctx.beginPath();
     pctx.moveTo(p1.x, p1.y);
     pctx.lineTo(p2.x, p2.y);
     pctx.stroke();
   });
 
-  // 2. Draw glowing yellow nerve nodes on all 21 joints
+  // 2. Draw bright lime green landmark circles on all 21 joints
   pts.forEach((pt, idx) => {
-    const isTip = [4, 8, 12, 16, 20].includes(idx);
     const isIndexTip = idx === 8;
-    const r = isIndexTip ? (isSlicing ? 7 : 5.5) : (isTip ? 3.5 : 2.5);
+    const r = isIndexTip ? (isSlicing ? 7 : 6) : 4.5;
 
-    // Outer golden glow
-    pctx.fillStyle = isIndexTip ? 'rgba(255, 230, 0, 0.7)' : 'rgba(255, 200, 0, 0.45)';
+    // Dark perimeter border to make the green circle sharply pop
+    pctx.fillStyle = '#003300';
     pctx.beginPath();
-    pctx.arc(pt.x, pt.y, r + 3, 0, Math.PI * 2);
+    pctx.arc(pt.x, pt.y, r + 1.5, 0, Math.PI * 2);
     pctx.fill();
 
-    // Bright yellow node
-    pctx.fillStyle = isIndexTip ? '#ffee00' : '#ffd000';
+    // Bright lime green joint
+    pctx.fillStyle = '#00ff00';
     pctx.beginPath();
     pctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
     pctx.fill();
 
-    // Pure white center spark
-    pctx.fillStyle = '#ffffff';
-    pctx.beginPath();
-    pctx.arc(pt.x, pt.y, Math.max(1, r * 0.45), 0, Math.PI * 2);
-    pctx.fill();
-
+    // Special indicator for Index Fingertip (Landmark 8 - Blade Emitter)
     if (isIndexTip) {
       pctx.strokeStyle = '#ffffff';
-      pctx.lineWidth = 1.2;
+      pctx.lineWidth = 2;
       pctx.beginPath();
       pctx.arc(pt.x, pt.y, r + 4, 0, Math.PI * 2);
       pctx.stroke();
@@ -98,11 +91,11 @@ function renderPipYellowNerves(
   });
 
   // Mini HUD badge
-  pctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-  pctx.fillRect(4, 4, 82, 16);
-  pctx.fillStyle = '#ffee00';
+  pctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  pctx.fillRect(4, 4, 96, 16);
+  pctx.fillStyle = '#00ff00';
   pctx.font = 'bold 9px sans-serif';
-  pctx.fillText('● NERVES ACTIVE', 7, 15);
+  pctx.fillText('● 21 JOINTS OK', 7, 15);
 }
 
 export const App: React.FC = () => {
@@ -240,7 +233,7 @@ export const App: React.FC = () => {
 
             const normLm = tracker.getNormalizedLandmarks();
             if (normLm && normLm.length >= 21) {
-              renderPipYellowNerves(pctx, normLm, pipCanvas.width, pipCanvas.height, tracker.isSlicing);
+              renderPipHandSkeleton(pctx, normLm, pipCanvas.width, pipCanvas.height, tracker.isSlicing);
             }
           }
         }
@@ -470,6 +463,27 @@ export const App: React.FC = () => {
                 </button>
               </div>
             )}
+
+            <div
+              style={{
+                marginTop: '12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: handDetected ? '#00ff00' : isCameraActive ? '#38bdf8' : '#fbbf24',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+              }}
+            >
+              <span>
+                {handDetected
+                  ? '● Hand Tracked (PIP Active)'
+                  : isCameraActive
+                  ? '○ Point hand at camera to test...'
+                  : 'ℹ️ Touch / Swipe Active'}
+              </span>
+            </div>
 
             {cameraError && (
               <p

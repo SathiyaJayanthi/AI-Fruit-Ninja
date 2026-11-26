@@ -359,11 +359,11 @@ class GameEngine:
             )
         elif self.state == STATE_PAUSED:
             self.ui.render_hud(self.screen, self.scores, self.tracker.is_hand_present)
-            self.ui.render_pause(self.screen)
+            self.ui.render_pause(self.screen, is_hand_detected=self.tracker.is_hand_present)
         elif self.state == STATE_GAME_OVER:
             self.ui.render_hud(self.screen, self.scores, self.tracker.is_hand_present)
             summary = self.scores.get_summary()
-            self.ui.render_game_over(self.screen, summary)
+            self.ui.render_game_over(self.screen, summary, is_hand_detected=self.tracker.is_hand_present)
 
     def cleanup(self):
         """Cleans up webcam and detector resources on shutdown."""

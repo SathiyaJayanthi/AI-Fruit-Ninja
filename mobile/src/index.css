@@ -37,19 +37,19 @@ html, body, #root {
   z-index: 1;
 }
 
-/* Front Camera PIP Display with Yellow Nerve Connections */
+/* Front Camera PIP Display with MediaPipe Green Joints & White Bones */
 .camera-pip {
   position: absolute;
   bottom: 16px;
   right: 16px;
-  width: 140px;
-  height: 105px;
+  width: 144px;
+  height: 108px;
   border-radius: 12px;
-  border: 2px solid rgba(255, 230, 0, 0.75);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75), 0 0 12px rgba(255, 220, 0, 0.35);
+  border: 2px solid #00ff00;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75), 0 0 14px rgba(0, 255, 0, 0.45);
   object-fit: cover;
-  z-index: 10;
-  opacity: 0.92;
+  z-index: 30;
+  opacity: 0.95;
   transition: opacity 0.2s, transform 0.2s;
 }
 

@@ -133,33 +133,39 @@ class UIRenderer:
             surface.blit(t_surf, t_surf.get_rect(center=timer_rect.center))
 
         # 4. Webcam PIP Preview (Top Right)
-        if self.show_pip and self.pip_surface is not None:
-            pip_x = SCREEN_WIDTH - PIP_WIDTH - PIP_MARGIN
-            pip_y = PIP_MARGIN
-            pip_rect = pygame.Rect(pip_x, pip_y, PIP_WIDTH, PIP_HEIGHT)
-
-            # Draw camera frame
-            surface.blit(self.pip_surface, (pip_x, pip_y))
-
-            # Glowing border around PIP (Green if hand detected, cyan default)
-            border_color = COLOR_ACCENT_GREEN if is_hand_detected else (60, 70, 95)
-            pygame.draw.rect(surface, border_color, pip_rect, 3, border_radius=6)
-
-            # Hand status badge
-            badge_rect = pygame.Rect(pip_x, pip_y + PIP_HEIGHT - 24, PIP_WIDTH, 24)
-            s = pygame.Surface((PIP_WIDTH, 24), pygame.SRCALPHA)
-            s.fill((15, 18, 30, 200))
-            surface.blit(s, badge_rect.topleft)
-
-            status_msg = "● HAND DETECTED" if is_hand_detected else "○ SHOW HAND"
-            status_color = COLOR_ACCENT_GREEN if is_hand_detected else (240, 180, 50)
-            status_surf = self.font_small.render(status_msg, True, status_color)
-            surface.blit(status_surf, status_surf.get_rect(center=badge_rect.center))
+        self.render_pip(surface, is_hand_detected)
 
         # 5. Bottom Controls Bar
         hint_text = "[C] Toggle Camera  |  [P] Pause  |  [R] Restart  |  [ESC] Menu"
         hint_surf = self.font_small.render(hint_text, True, (120, 130, 160))
         surface.blit(hint_surf, hint_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 22)))
+
+    def render_pip(self, surface: pygame.Surface, is_hand_detected: bool):
+        """Renders camera PIP preview with hand tracking overlay in the top-right corner."""
+        if not self.show_pip or self.pip_surface is None:
+            return
+
+        pip_x = SCREEN_WIDTH - PIP_WIDTH - PIP_MARGIN
+        pip_y = PIP_MARGIN
+        pip_rect = pygame.Rect(pip_x, pip_y, PIP_WIDTH, PIP_HEIGHT)
+
+        # Draw camera frame
+        surface.blit(self.pip_surface, (pip_x, pip_y))
+
+        # Glowing border around PIP (Bright Green if hand detected, cyan default)
+        border_color = COLOR_ACCENT_GREEN if is_hand_detected else (60, 70, 95)
+        pygame.draw.rect(surface, border_color, pip_rect, 3, border_radius=6)
+
+        # Hand status badge
+        badge_rect = pygame.Rect(pip_x, pip_y + PIP_HEIGHT - 24, PIP_WIDTH, 24)
+        s = pygame.Surface((PIP_WIDTH, 24), pygame.SRCALPHA)
+        s.fill((15, 18, 30, 200))
+        surface.blit(s, badge_rect.topleft)
+
+        status_msg = "● HAND DETECTED" if is_hand_detected else "○ SHOW HAND"
+        status_color = COLOR_ACCENT_GREEN if is_hand_detected else (240, 180, 50)
+        status_surf = self.font_small.render(status_msg, True, status_color)
+        surface.blit(status_surf, status_surf.get_rect(center=badge_rect.center))
 
     def render_menu(
         self,
@@ -235,7 +241,10 @@ class UIRenderer:
         cam_surf = self.font_small.render(cam_hint, True, cam_color)
         surface.blit(cam_surf, cam_surf.get_rect(center=(SCREEN_WIDTH // 2, prompt_y + 60)))
 
-    def render_pause(self, surface: pygame.Surface):
+        # Webcam PIP Preview with real-time hand skeleton overlay
+        self.render_pip(surface, is_hand_detected)
+
+    def render_pause(self, surface: pygame.Surface, is_hand_detected: bool = False):
         """Renders Pause Menu overlay with interactive clickable buttons."""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
         overlay.fill((10, 14, 25, 200))
@@ -256,10 +265,14 @@ class UIRenderer:
         menu_txt = self.font_medium.render("MAIN MENU [ESC]", True, COLOR_ACCENT_CYAN)
         surface.blit(menu_txt, menu_txt.get_rect(center=self.btn_pause_main_menu.center))
 
+        # Webcam PIP Preview with real-time hand skeleton overlay
+        self.render_pip(surface, is_hand_detected)
+
     def render_game_over(
         self,
         surface: pygame.Surface,
         summary: Dict[str, Any],
+        is_hand_detected: bool = False,
     ):
         """Renders Game Over statistics card with interactive clickable buttons."""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -312,6 +325,9 @@ class UIRenderer:
         self._draw_rounded_panel(surface, self.btn_game_over_main_menu, (35, 45, 75), border_color=COLOR_ACCENT_CYAN, border_width=2, border_radius=10)
         menu_txt = self.font_medium.render("MAIN MENU [ESC]", True, COLOR_ACCENT_CYAN)
         surface.blit(menu_txt, menu_txt.get_rect(center=self.btn_game_over_main_menu.center))
+
+        # Webcam PIP Preview with real-time hand skeleton overlay
+        self.render_pip(surface, is_hand_detected)
 
     def _draw_rounded_panel(
         self,
